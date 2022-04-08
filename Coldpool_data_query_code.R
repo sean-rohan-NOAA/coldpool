@@ -51,7 +51,7 @@ ebs_nbs_temps_full_start_time_filt
 #Group ebs_nbs_temps_full_start_time_filt table by year and find 1) min start time (survey start date), 2) max start time (survey end date) and number of temperature samples per year (n)
 
 survey_start_end_times <- ebs_nbs_temps_full_start_time_filt %>% 
-  dplyr::group_by(year) %>% 
+  dplyr::group_by(year, cruise) %>% 
   dplyr::summarize(survey_start_date = min(start_time), survey_end_date = max(start_time), temp_samples_per_year = n()) %>%
   as.data.frame()
 survey_start_end_times
@@ -79,4 +79,4 @@ survey_start_end_days <- ebs_nbs_temps_full_start_time_filt %>%
   as.data.frame()
 survey_start_end_days
 
-ave(survey_start_end_days$max_day - survey_start_end_days$min_day)
+mean((survey_start_end_days$max_day - survey_start_end_days$min_day)+1)
