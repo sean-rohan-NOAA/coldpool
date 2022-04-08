@@ -1,3 +1,8 @@
+# Cold pool Table 2 - EBS and NBS Survey Start/End Times and Number of Samples per Region Per Year (1982-2019, 2021)
+# Created by: Nicole Charriere and Sean Rohan
+# Contact: nicole.charriere@noaa.gov
+# Created: 2022-04-07
+# Modified: 
 
 #Load required libraries
 library(coldpool)
@@ -24,56 +29,68 @@ ebs_nbs_temps_filt
 #Get .csv column names to reorganize
 colnames(ebs_nbs_temps_filt)
 
-#Reorganize .csv column names in order of year, cruise, survey_definition_id, stratum, stationid, start_time, latitude, longitude, haul_type, performance, gear_temperature, surface_temperature, bottom_depth
+#Reorganize .csv column names in order of year,survey_definition_id, start_time, gear_temperature and surface_temperature
 
-ebs_nbs_temps_sum <- dplyr::select(ebs_nbs_temps_filt, year, cruise, survey_definition_id, stratum, stationid, start_time, latitude, longitude, haul_type, performance, gear_temperature, surface_temperature, bottom_depth) %>%
-  dplyr::group_by(year, cruise, survey_definition_id, stratum, stationid, start_time, latitude, longitude, haul_type, performance, gear_temperature, surface_temperature, bottom_depth) %>%
+ebs_nbs_temps_sum <- dplyr::select(ebs_nbs_temps_filt, year, survey_definition_id, start_time, gear_temperature, surface_temperature) %>%
+  dplyr::group_by(year, survey_definition_id, start_time, gear_temperature, surface_temperature) %>%
   dplyr::summarize()
 ebs_nbs_temps_sum
 
 #Find start and end dates to surveys from .csv
-#Filter and select for year, cruise, stratum, stationid, and start_time from ebs_nbs_temps_full
-
-ebs_nbs_temps_full_start_time_filt <- dplyr::select(ebs_nbs_temps_full, year, cruise, stratum, stationid, start_time)
-ebs_nbs_temps_full_start_time_filt
-
 #Convert start_time column to Anchorage time zone
 
-ebs_nbs_temps_full_start_time_filt$start_time <- as.POSIXct(ebs_nbs_temps_full_start_time_filt$start_time, tz = "America/Anchorage")
-ebs_nbs_temps_full_start_time_filt$start_time
+ebs_nbs_temps_sum$start_time <- as.POSIXct(ebs_nbs_temps_sum$start_time, tz = "America/Anchorage")
+ebs_nbs_temps_sum$start_time
 
-#Find day of the year (yday) for start_time and add column to esb_nbs_full_start_time_filt table
+#Find day of the year (yday) for start_time and add column to ebs_nbs_temps_sum table
 
-ebs_nbs_temps_full_start_time_filt$yday <- lubridate::yday(ebs_nbs_temps_full_start_time_filt$start_time)
-ebs_nbs_temps_full_start_time_filt$yday
-ebs_nbs_temps_full_start_time_filt
+ebs_nbs_temps_sum$yday <- lubridate::yday(ebs_nbs_temps_sum$start_time)
+ebs_nbs_temps_sum$yday
+ebs_nbs_temps_sum
 
-#Group ebs_nbs_temps_full_start_time_filt table by year and find 1) min start time (survey start date), 2) max start time (survey end date) and number of temperature samples per year (n)
+#Group ebs_nbs_temps_sum table by year and survey_definition_id. Find 1) min start time (survey start date), 2) max start time (survey end date) and number of temperature samples per year (n).
 
-survey_start_end_times <- ebs_nbs_temps_full_start_time_filt %>% 
-  dplyr::group_by(year, cruise) %>% 
+start_end_num <- ebs_nbs_temps_sum %>% 
+  dplyr::group_by(year, survey_definition_id) %>% 
   dplyr::summarize(survey_start_date = min(start_time), survey_end_date = max(start_time), temp_samples_per_year = n()) %>%
   as.data.frame()
-survey_start_end_times
+start_end_num
+
+#Rename survey_definition_id column to region
+
+nebs_start_end_num <- dplyr::rename(start_end_num, region = survey_definition_id)
+nebs_start_end_num
+
+#Change survey_start_times$survey_definition_id class to character 
+
+base::sapply(nebs_start_end_num$region, class)
+nebs_start_end_num$region <- as.character(nebs_start_end_num$region)
+base::sapply(nebs_start_end_num$region, class)
+
+#Rename survey_definition_id = 98 to "EBS"; and 143 to "NBS"
+
+nebs_start_end_num$region[nebs_start_end_num$region == "98"] <- "EBS"
+nebs_start_end_num$region[nebs_start_end_num$region == "143"] <- "NBS"
+nebs_start_end_num$region
 
 #Convert start and end times to month and day
 
-lubridate::month(survey_start_end_times$survey_start_date, label = TRUE, abbr = TRUE)
-lubridate::day(survey_start_end_times$survey_start_date)
+lubridate::month(nebs_start_end_num$survey_start_date, label = TRUE, abbr = TRUE)
+lubridate::day(nebs_start_end_num$survey_start_date)
 
-survey_start_end_times$survey_start_date <- paste(lubridate::month(survey_start_end_times$survey_start_date, label = TRUE, abbr = TRUE), lubridate::day(survey_start_end_times$survey_start_date))
+nebs_start_end_num$survey_start_date <- paste(lubridate::month(nebs_start_end_num$survey_start_date, label = TRUE, abbr = TRUE), lubridate::day(nebs_start_end_num$survey_start_date))
 
-survey_start_end_times$survey_end_date <- paste(lubridate::month(survey_start_end_times$survey_end_date, label = TRUE, abbr = TRUE), lubridate::day(survey_start_end_times$survey_end_date))
-  
-View(survey_start_end_times)
+nebs_start_end_num$survey_end_date <- paste(lubridate::month(nebs_start_end_num$survey_end_date, label = TRUE, abbr = TRUE), lubridate::day(nebs_start_end_num$survey_end_date))
+
+View(nebs_start_end_num)
 
 #Write .csv with year, start and end times, and number of temperature samples
 
-write.csv(survey_start_end_times, file = "survey_dates_and_samples.csv", row.names = FALSE)
+write.csv(nebs_start_end_num, file = "survey_dates_and_samples.csv", row.names = FALSE)
 
 #Find average # of survey days
 
-survey_start_end_days <- ebs_nbs_temps_full_start_time_filt %>% 
+survey_start_end_days <- ebs_nbs_temps_sum %>% 
   dplyr::group_by(year) %>% 
   dplyr::summarize(min_day = min(yday), max_day = max(yday)) %>%
   as.data.frame()
