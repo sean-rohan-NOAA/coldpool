@@ -93,23 +93,23 @@ nebs_start_end_num$survey_end_date <- paste(lubridate::month(nebs_start_end_num$
 
 #Unite start and end dates into single column of survey_start_end_dates)
 
-nebs_startend_num <- tidyr::unite(nebs_start_end_num, dates, survey_start_date, survey_end_date, sep = "-", remove = TRUE)
-nebs_startend_num
+nebs_dates_num <- tidyr::unite(nebs_start_end_num, dates, survey_start_date, survey_end_date, sep = "-", remove = TRUE)
+nebs_dates_num
 
 #Separate dates and samples per year into both EBS and NBS region columns
 
-nebs_startend_num_wide <- tidyr::pivot_wider(nebs_startend_num, id_cols = year,
+nebs_dates_num_wide <- tidyr::pivot_wider(nebs_dates_num, id_cols = year,
                               values_from = dates,
                               names_from = region,
                               names_prefix = "dates_") %>%
   dplyr::full_join(
-    tidyr::pivot_wider(nebs_startend_num, id_cols = year,
+    tidyr::pivot_wider(nebs_dates_num, id_cols = year,
                        values_from = temp_samples_per_year,
                        names_from = region,
                        names_prefix = "temp_samples_per_year_")) %>%
    dplyr::select(year, dates_EBS, temp_samples_per_year_EBS, dates_NBS, temp_samples_per_year_NBS)
 
-View(nebs_startend_num_wide)
+View(nebs_dates_num_wide)
 
 #Write .csv with year, region, start and end times, and number of temperature samples
 
