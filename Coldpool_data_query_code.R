@@ -22,7 +22,7 @@ coldpool::get_data(channel)
 ebs_nbs_temps_full <- read.csv("data/ebs_nbs_temperature_full_area.csv")
 ebs_nbs_temps_full
 
-#
+#Filter ebs_nbs_temps_full where survey_definition_id = 143 for NBS survey. Then add cold pool index .csv data into ebs_nbs_temps_full
 
 ebs_nbs_temps_full <- filter(ebs_nbs_temps_full, survey_definition_id == 143) %>%
   dplyr::bind_rows(read.csv("data/index_hauls_temperature_data.csv"))
@@ -90,14 +90,17 @@ nebs_start_end_num$survey_start_date <- paste(lubridate::month(nebs_start_end_nu
 
 nebs_start_end_num$survey_end_date <- paste(lubridate::month(nebs_start_end_num$survey_end_date, label = TRUE, abbr = TRUE), lubridate::day(nebs_start_end_num$survey_end_date))
 
-View(nebs_start_end_num)
+#Unite start and end dates into single column of survey_start_end_dates)
 
-?pivot_wider
+nebs_startend_num <- tidyr::unite(nebs_start_end_num, survey_start_end_date, survey_start_date, survey_end_date, sep = "/", remove = TRUE)
+nebs_startend_num
 
+startend_num_ebs_nbs <- pivot_wider(nebs_startend_num, names_from = region, values_from = region)
+startend_num_ebs_nbs
 
 #Write .csv with year, region, start and end times, and number of temperature samples
 
-write.csv(nebs_start_end_num, file = "survey_dates_and_samples.csv", row.names = FALSE)
+write.csv(startend_num_ebs_nbs, file = "survey_dates_and_samples.csv", row.names = FALSE)
 
 #Find average # of survey days
 
