@@ -1,6 +1,6 @@
 # Cold pool Table 2 - EBS and NBS Survey Start/End Times and Number of Samples per Region Per Year (1982-2019, 2021)
 # Created by: Nicole Charriere and Sean Rohan
-# Contact: nicole.charriere@noaa.gov
+# Contact: nicole.charriere@noaa.gov or sean.rohan@noaa.gov
 # Created: 2022-04-07
 # Modified: 2022-04-19 
 
