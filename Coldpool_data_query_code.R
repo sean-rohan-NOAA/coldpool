@@ -25,7 +25,7 @@ ebs_nbs_temps_full
 
 #Filter ebs_nbs_temps_full where survey_definition_id = 143 for NBS survey. Then add cold pool index .csv data into ebs_nbs_temps_full
 
-ebs_nbs_temps_full <- filter(ebs_nbs_temps_full, survey_definition_id == 143) %>%
+ebs_nbs_temps_full <- dplyr::filter(ebs_nbs_temps_full, survey_definition_id == 143) %>%
   dplyr::bind_rows(read.csv("data/index_hauls_temperature_data.csv"))
 ebs_nbs_temps_full
 
@@ -90,6 +90,8 @@ lubridate::day(nebs_start_end_num$survey_start_date)
 nebs_start_end_num$survey_start_date <- paste(lubridate::month(nebs_start_end_num$survey_start_date, label = TRUE, abbr = TRUE), lubridate::day(nebs_start_end_num$survey_start_date))
 
 nebs_start_end_num$survey_end_date <- paste(lubridate::month(nebs_start_end_num$survey_end_date, label = TRUE, abbr = TRUE), lubridate::day(nebs_start_end_num$survey_end_date))
+nebs_start_end_num
+
 
 #Unite start and end dates into single column of survey_start_end_dates)
 
@@ -115,12 +117,22 @@ View(nebs_dates_num_wide)
 
 write.csv(nebs_startend_num_wide, file = "survey_dates_and_samples.csv", row.names = FALSE)
 
-#Find average number of survey days for separate part of cold pool tech memo
+#Find average number of EBS survey days for separate part of cold pool tech memo
 
-survey_start_end_days <- ebs_nbs_temps_sum %>% 
-  dplyr::group_by(year) %>% 
-  dplyr::summarize(min_day = min(yday), max_day = max(yday)) %>%
-  as.data.frame()
-survey_start_end_days
+ebs_start_end_days <- ebs_nbs_temps_sum %>%
+  dplyr::group_by(year) %>%
+  dplyr::filter(survey_definition_id == 98) %>%
+  dplyr::summarize(min_day = min(yday), max_day = max(yday))
+ebs_start_end_days
 
-mean((survey_start_end_days$max_day - survey_start_end_days$min_day)+1)
+mean((ebs_start_end_days$max_day - ebs_start_end_days$min_day)+1)
+
+#Find average number of NBS survey days for separate part of cold pool tech memo
+
+nbs_start_end_days <- ebs_nbs_temps_sum %>%
+  dplyr::group_by(year) %>%
+  dplyr::filter(survey_definition_id == 143) %>%
+  dplyr::summarize(min_day = min(yday), max_day = max(yday))
+nbs_start_end_days
+
+mean((nbs_start_end_days$max_day - nbs_start_end_days$min_day)+1)
