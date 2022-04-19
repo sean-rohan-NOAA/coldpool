@@ -2,13 +2,14 @@
 # Created by: Nicole Charriere and Sean Rohan
 # Contact: nicole.charriere@noaa.gov
 # Created: 2022-04-07
-# Modified: 2022-04-08 
+# Modified: 2022-04-19 
 
 #Load required libraries
 library(coldpool)
 library(tidyverse)
 library(dplyr)
 library(lubridate)
+library(tidyr)
 
 #Connect to AFSC Oracle database and assign get_connected function to channel
 ?get_connected
@@ -92,17 +93,29 @@ nebs_start_end_num$survey_end_date <- paste(lubridate::month(nebs_start_end_num$
 
 #Unite start and end dates into single column of survey_start_end_dates)
 
-nebs_startend_num <- tidyr::unite(nebs_start_end_num, survey_start_end_date, survey_start_date, survey_end_date, sep = "/", remove = TRUE)
+nebs_startend_num <- tidyr::unite(nebs_start_end_num, dates, survey_start_date, survey_end_date, sep = "-", remove = TRUE)
 nebs_startend_num
 
-startend_num_ebs_nbs <- pivot_wider(nebs_startend_num, names_from = region, values_from = region)
-startend_num_ebs_nbs
+#Separate dates and samples per year into both EBS and NBS region columns
+
+nebs_startend_num_wide <- tidyr::pivot_wider(nebs_startend_num, id_cols = year,
+                              values_from = dates,
+                              names_from = region,
+                              names_prefix = "dates_") %>%
+  dplyr::full_join(
+    tidyr::pivot_wider(nebs_startend_num, id_cols = year,
+                       values_from = temp_samples_per_year,
+                       names_from = region,
+                       names_prefix = "temp_samples_per_year_")) %>%
+   dplyr::select(year, dates_EBS, temp_samples_per_year_EBS, dates_NBS, temp_samples_per_year_NBS)
+
+View(nebs_startend_num_wide)
 
 #Write .csv with year, region, start and end times, and number of temperature samples
 
-write.csv(startend_num_ebs_nbs, file = "survey_dates_and_samples.csv", row.names = FALSE)
+write.csv(nebs_startend_num_wide, file = "survey_dates_and_samples.csv", row.names = FALSE)
 
-#Find average # of survey days
+#Find average number of survey days for separate part of cold pool tech memo
 
 survey_start_end_days <- ebs_nbs_temps_sum %>% 
   dplyr::group_by(year) %>% 
