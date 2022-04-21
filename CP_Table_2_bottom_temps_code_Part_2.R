@@ -115,4 +115,4 @@ View(nebs_dates_botm_wide)
 
 #Write .csv with year, region, start and end times, and number of temperature samples
 
-write.csv(nebs_dates_botm_wide, file = "survey_dates_and_bottom_samples.csv", row.names = FALSE)
+write.csv(nebs_dates_botm_wide, file = "analysis/survey_dates_and_bottom_samples.csv", row.names = FALSE)

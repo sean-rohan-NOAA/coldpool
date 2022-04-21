@@ -116,7 +116,7 @@ View(nebs_dates_surf_wide)
 
 #Write .csv with year, region, start and end times, and number of temperature samples
 
-write.csv(nebs_dates_surf_wide, file = "survey_dates_and_surface_samples.csv", row.names = FALSE)
+write.csv(nebs_dates_surf_wide, file = "analysis/survey_dates_and_surface_samples.csv", row.names = FALSE)
 
 #Find average number of EBS survey days for separate part of cold pool tech memo
 
@@ -137,74 +137,3 @@ nbs_start_end_days <- nebs_all_surface_temps_sum %>%
 nbs_start_end_days
 
 mean((nbs_start_end_days$max_day - nbs_start_end_days$min_day)+1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
